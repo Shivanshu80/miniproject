@@ -9,64 +9,118 @@ export class AuthService {
 
     constructor(@InjectModel(User.name) private userModel: Model<User>) { }
 
-    async getUsers(): Promise<User[]> {
+    async getUsers(): Promise<{ message: string; user: User[] }> {
         try {
             const users = await this.userModel.find();
-            console.log(users)
-            return users
+            if (users.length === 0) {
+                throw new NotFoundException('No Users Found');
+            } else {
+                const response = {
+                    message: 'Users Fetched Successfully',
+                    user: users
+                }
+                return response;
+            }
+
         } catch (error: any) {
-            const message = {
-                message: 'Somthing Wrong While To Find Users',
+            const response = {
+                message: 'No Users Found',
                 error: error
             }
-            throw new NotFoundException(message);
+            throw new NotFoundException(response);
         }
     }
 
-    async addUser(userDto: UserDto): Promise<User> {
+    async addUser(userDto: UserDto): Promise<{ message: string; user: User }> {
         try {
             const existsUser = await this.userModel.create(userDto);
-            return existsUser
+            const response = {
+                message: 'User Created Successfully',
+                user: existsUser
+            }
+            return response;
+
         } catch (error: any) {
             const duplicateKey = 11000;
-            const message = {
-                message: 'User Already Exists'
+            const response = {
+                message: 'User Already Exists With This Email',
+                error: error
             }
             if (error.code === duplicateKey) {
-                throw new UnauthorizedException(message)
+                throw new UnauthorizedException(response)
             } else {
-                throw new NotFoundException(message);
+                throw new NotFoundException(response);
             }
         }
     }
 
-    // removeUser(userEmail: User): User {
-    //     const existsUser = this.users.findIndex(user => user.email === userEmail.email);
-    //     if (existsUser !== -1) {
-    //         this.users.splice(existsUser, 1);
-    //         return userEmail
-    //     } else {
-    //         throw new NotFoundException('User Not Found');
-    //     }
-    // }
+    async removeUser(userEmail: UserDto): Promise<{ message: string; user: User }> {
+        try {
+            const existsUser = await this.userModel.findOneAndDelete({ email: userEmail.email });
+            if (existsUser === null) {
+                throw new NotFoundException('User Not Found');
+            } else {
+                const response = {
+                    message: 'User Removed Successfully',
+                    user: existsUser
+                }
+                return response;
+            }
+        } catch (error: any) {
+            const response = {
+                message: 'Somthing Wrong While To Remove User',
+                error: error
+            }
+            throw new NotFoundException(response);
+        }
+    }
 
-    // singleUser(user: User): User {
-    //     const existsUser = this.users.find(usr => usr.email === user.email);
-    //     if (existsUser === undefined) {
-    //         throw new NotFoundException('User Not Found');
-    //     } else {
-    //         return existsUser
-    //     }
-    // }
+    async singleUser(user: UserDto): Promise<{ message: string; user: User }> {
+        try {
+            const existsUser = await this.userModel.findOne({ email: user.email });
+            if (existsUser === null) {
+                throw new NotFoundException('User Not Found');
+            } else {
+                const response = {
+                    message: 'User Fetched Successfully',
+                    user: existsUser
+                }
+                return response;
+            }
+        } catch (error: any) {
+            const response = {
+                message: 'User Not Found With This Email',
+                error: error
+            };
+            throw new NotFoundException(response);
+        }
+    }
 
-    // updateUser(existsUser:User):User{
-    //     const alreadyUser = this.users.find(user => user.email === existsUser.email);
-    //     if(alreadyUser === undefined){
-    //         throw new NotFoundException('User Not Found');
-    //     }else{
-    //         const index = this.users.findIndex(user => user.email === existsUser.email);
-    //         this.users[index] = existsUser
-    //         return existsUser
-    //     }
-    // }
+    async updateUser(existsUser: UserDto): Promise<{ message: string; user: User }> {
+        try {
+            const updatedUser = await this.userModel.findOneAndUpdate({ email: existsUser.email },
+                {
+                    $set: {
+                        name: existsUser.name,
+                        password: existsUser.password,
+                    },
+                },
+                { new: true });
+            if (updatedUser === null) {
+                throw new NotFoundException('User Not Found');
+            }
+
+            const response = {
+                message: 'User Updated Successfully',
+                user: updatedUser
+            };
+            return response;
+        } catch (error: any) {
+            const response = {
+                message: 'User Not Found With This Email',
+                error: error
+            };
+            throw new NotFoundException(response);
+        }
+    }
 }

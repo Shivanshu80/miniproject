@@ -7,28 +7,28 @@ import { User } from './user.schema';
 export class AuthController {
     constructor(private readonly authService: AuthService) { }
     @Get('users')
-    allUsers(): Promise<User[]> {
+    allUsers(): Promise<{ message: string, user: User[] }> {
         return this.authService.getUsers();
     }
 
     @Post('adduser')
-    addUser(@Body() userDto: UserDto): Promise<User> {
+    addUser(@Body() userDto: UserDto): Promise<{ message: string, user: User }> {
         return this.authService.addUser(userDto);
     }
 
-    // @Delete('removeuser')
-    // removeUser(@Body() userEmail: User): User {
-    //     return this.authService.removeUser(userEmail);
-    // }
+    @Delete('removeuser')
+    removeUser(@Body() userEmail: UserDto): Promise<{ message: string, user: User }> {
+        return this.authService.removeUser(userEmail);
+    }
 
-    // @Get('singleuser')
-    // singleUser(@Body() user: User): User {
-    //     return this.authService.singleUser(user);
-    // }
+    @Get('singleuser')
+    singleUser(@Body() user: User): Promise<{ message: string, user: User }> {
+        return this.authService.singleUser(user);
+    }
 
-    // @Put('updateuser')
-    // updateUser(@Body() existsUser:User):User{
-    //     return this.authService.updateUser(existsUser);
-    // }
+    @Put('updateuser')
+    updateUser(@Body() existsUser:UserDto):Promise<{message:string;user:User}>{
+        return this.authService.updateUser(existsUser);
+    }
 
 }
