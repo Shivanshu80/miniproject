@@ -13,7 +13,7 @@ export class AuthController {
 
     @Post('adduser')
     addUser(@Body() userDto: UserDto) {
-        return this.authService.addUser(userDto);
+        return this.authService.addUser(userDto)
     }
 
     @Delete('removeuser')
